@@ -2,8 +2,11 @@ require 'logger'
 
 require 'cubits/version'
 require 'cubits/connection'
+require 'cubits/errors'
 
 module Cubits
+  DEFAULT_BASE_URL = URI.parse('https://pay.cubits.com/')
+
   #
   # Configure Cubits connection
   #
@@ -19,11 +22,7 @@ module Cubits
   # Returns configured Connection object
   #
   def self.connection
-    @connection || fail(
-      "Cubits connection is not configured\n" \
-      "  Use:\n" \
-      "    Cubits.configure(key: '<YOUR_API_KEY>', secret: '<YOUR_API_SECRET>')"
-    )
+    @connection || fail('Cubits connection is not configured')
   end
 
   # Returns current Logger object
@@ -38,6 +37,20 @@ module Cubits
     @logger = new_logger
   end
 
+  # Returns current base API URL
+  #
+  def self.base_url
+    @base_url ||= DEFAULT_BASE_URL
+  end
+
+  # Sets new base API URL
+  #
+  # @param new_base_url [URI]
+  #
+  def self.base_url=(new_base_url)
+    fail ArgumentError, 'URI is expected as new_base_url' unless new_base_url.is_a?(URI)
+    @base_url = new_base_url
+  end
   # Resets all internal states
   #
   def self.reset
