@@ -37,4 +37,11 @@ module Cubits
   def self.logger=(new_logger)
     @logger = new_logger
   end
+
+  # Resets all internal states
+  #
+  def self.reset
+    @connection = nil
+    @logger = nil
+  end
 end # module Cubits
