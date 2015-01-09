@@ -3,8 +3,13 @@ require 'logger'
 require 'cubits/version'
 require 'cubits/connection'
 require 'cubits/errors'
+require 'cubits/helpers'
+require 'cubits/resource'
+require 'cubits/invoice'
 
 module Cubits
+  extend Cubits::Helpers
+
   DEFAULT_BASE_URL = URI.parse('https://pay.cubits.com/')
 
   #
