@@ -6,6 +6,8 @@ require 'cubits/errors'
 require 'cubits/helpers'
 require 'cubits/resource'
 require 'cubits/invoice'
+require 'cubits/account'
+require 'cubits/quote'
 
 module Cubits
   extend Cubits::Helpers
@@ -50,9 +52,10 @@ module Cubits
 
   # Sets new base API URL
   #
-  # @param new_base_url [URI]
+  # @param new_base_url [URI,String]
   #
   def self.base_url=(new_base_url)
+    new_base_url = URI.parse(new_base_url) if new_base_url.is_a?(String)
     fail ArgumentError, 'URI is expected as new_base_url' unless new_base_url.is_a?(URI)
     @base_url = new_base_url
   end
