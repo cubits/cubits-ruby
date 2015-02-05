@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['alex.kukushkin@cubits.com']
   spec.summary       = 'Ruby client for Cubits Merchant API'
   spec.description   = 'Ruby client for Cubits Merchant API'
-  spec.homepage      = ''
+  spec.homepage      = 'https://github.com/cubits/cubits-ruby'
   spec.license       = 'MIT'
 
   spec.files         = `git ls-files -z`.split("\x0")
