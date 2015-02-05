@@ -22,7 +22,7 @@ Or install it yourself as:
 
 ## Configuration
 
-First thing you have to do is to get your API token (key+secret) from Cubits  *...Merchant integration tab?..*
+First thing you have to do is to generate your API token (key+secret) from your [Cubits Pay](https://cubits.com/merchant) account in the API integration section.
 
 Then, configure your Cubits client:
 ```ruby
@@ -44,22 +44,21 @@ Cubits.available? # => true
 
 Using the `cubits` Ruby client you can create and retrieve invoices.
 
-Invoices are represented by `Cubits::Invoice` class, which is a descendant of [Hashie::Mash](https://github.com/intridea/hashie#mash),
-so it's a Hash with a method-like access to its elements:
+Invoices are represented by the `Cubits::Invoice` class, which is a descendant of [Hashie::Mash](https://github.com/intridea/hashie#mash), so it's a Hash with a method-like access to its elements:
 
 ```ruby
 invoice.id # => "686e4238970a92f04f1f5a30035bf024"
 invoice.status # => "pending"
 invoice.invoice_amount # => "0.00446216"
 invoice.invoice_currency # => "BTC"
-invoice.address # => "2MwFC54RmUyHtyNcNuxtU5zW4hCGTvYuXti"
+invoice.address # => "3QJmV3qfvL9SuYo34YihAf3sRCW3qSinyC"
 ```
 
 #### .create
 
 Creates a new invoice.
 
-For a list of accepted and returned parameters, see `POST /api/v1/invoices` page in the [Cubits Help Center](https://cubits.com/help) Developer's section.
+For a list of accepted and returned parameters, see the `POST /api/v1/invoices` page in the [Cubits Help Center](https://cubits.com/help) Developer's section.
 
 
 ```ruby
@@ -77,7 +76,7 @@ Retrieves an existing invoice.
 invoice = Cubits::Invoice.find("686e4238970a92f04f1f5a30035bf024")
 ```
 
-Returns `Cubits::Invoice` object or `nil` if invoice was not found.
+Returns `Cubits::Invoice` object or `nil` if the specified invoice was not found.
 
 
 #### #reload
@@ -86,13 +85,12 @@ Reloads `Cubits::Invoice` object.
 ```ruby
 invoice = Cubits::Invoice.find("686e4238970a92f04f1f5a30035bf024")
 # do some stuff...
-invoice.reload # gets the up-to-date invoice data from Cubits API
+invoice.reload # gets the up-to-date invoice data from the Cubits API
 ```
 
 ## Accounts
 
-Your Cubits accounts are represented by `Cubits::Account` class, which is descendant of  of [Hashie::Mash](https://github.com/intridea/hashie#mash),
-so it's a Hash with a method-like access to its elements:
+Your Cubits accounts are represented by the `Cubits::Account` class, which is a descendant of [Hashie::Mash](https://github.com/intridea/hashie#mash), so it's a Hash with a method-like access to its elements:
 ```ruby
 account = Cubits::Account.all.first
 
@@ -114,12 +112,12 @@ Cubits::Account.all # => [{ currency: 'EUR', balance: '125.00' }, ...]
 
 Requests a quote for a *"buy"* or *"sell"* operation.
 
-Quotes provide estimation of the exchange rate for a given amount and operation type.
+Quotes contain information about the current Cubits exchange rate for a certain operation type of a certain amount and can serve as an estimation for subsequent buy or sell requests.
 
 #### .create
 Creates a new quote.
 
-For a list of accepted and returned parameters, see `POST /api/v1/quotes` page in the [Cubits Help Center](https://cubits.com/help) Developer's section.
+For a list of accepted and returned parameters, see the `POST /api/v1/quotes` page in the [Cubits Help Center](https://cubits.com/help) Developer's section.
 
 
 ```ruby
@@ -144,12 +142,12 @@ Here a call to `POST /api/v1/quotes` is executed and the response is wrapped in 
 
 `Cubits.buy` helper method creates a transaction to buy bitcoins using funds from your Cubits account. Bought bitcoins will be credited to your Cubits wallet.
 
-Exact exchange rate will be calculated at the transaction execution time.
+The exact exchange rate will be calculated at the transaction execution time.
 
 #### Parameters
 Attribute   | Data type   | Description
 ------------|-------------|--------------
-sender      | Hash        | Sender attributes define spending part of transaction
+sender      | Hash        | Sender attributes define the spending part of the transaction
 sender[:currency] | String | [ISO 4217](http://en.wikipedia.org/wiki/ISO_4217#Active_codes) code of the currency that you want to spend (e.g. "EUR")
 sender[:amount] | String   | Amount in specified currency to be spent, decimal number as a string (e.g. "12.50")
 
@@ -158,21 +156,21 @@ Cubits.buy sender: { currency: 'EUR', amount: '150.00' }
 # => {"tx_ref_code"=>"RNXH3"}
 ```
 
-On success `.buy` creates a transaction and returns its reference code.
+On success, `.buy` creates a transaction and returns its reference code.
 
 
 ## Sell bitcoins
 
-`Cubits.sell` helper method creates a transaction to sell bitcoins from your Cubits wallet and receive amount in specified fiat currency. Fiat funds will be credited to your Cubits account.
+`Cubits.sell` helper method creates a transaction to sell bitcoins from your Cubits wallet and receive the according amount in the specified fiat currency. Fiat funds will be credited to your Cubits cash account.
 
-Exact exchange rate will be calculated at the transaction execution time.
+The exact exchange rate will be calculated at the transaction execution time.
 
 #### Parameters
 Attribute   | Data type   | Description
 ------------|-------------|--------------
-sender      | Hash        | Sender attributes define spending part of transaction
+sender      | Hash        | Sender attributes define the spending part of the transaction
 sender[:amount] | String   | Amount in BTC to be spent, decimal number as a string (e.g. "0.01250000")
-receiver    | Hash        | Receiver attributes define receiving part of transaction
+receiver    | Hash        | Receiver attributes define the receiving part of the transaction
 receiver[:currency] | String | ISO 4217](http://en.wikipedia.org/wiki/ISO_4217#Active_codes) code of the currency that you want to receive (e.g. "EUR")
 
 
@@ -181,11 +179,8 @@ Cubits.sell sender: { amount: '0.45000000' }, receiver: { currency: 'EUR' }
 # => {"tx_ref_code"=>"4XRX3"}
 ```
 
-On success `.sell` creates a transaction and returns its reference code.
+On success, `.sell` creates a transaction and returns its reference code.
 
-## Sell bitcoins
-
-Sell bla bla bla
 
 ## Send money
 
