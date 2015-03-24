@@ -88,6 +88,63 @@ invoice = Cubits::Invoice.find("686e4238970a92f04f1f5a30035bf024")
 invoice.reload # gets the up-to-date invoice data from the Cubits API
 ```
 
+## Channels
+
+Using the `cubits` Ruby client you can create, update and retrieve channels.
+
+Channels are represented by the `Cubits::Channel` class, which is a descendant of [Hashie::Mash](https://github.com/intridea/hashie#mash), so it's a Hash with a method-like access to its elements:
+
+```ruby
+channel.id # => "d17ad6c96f83162a2764ecd4739d7ab2"
+channel.receiver_currency # => "EUR"
+channel.address # => "3QJmV3qfvL9SuYo34YihAf3sRCW3qSinyC"
+```
+
+#### .create
+
+Creates a new channel.
+
+For a list of accepted and returned parameters, see the `POST /api/v1/channels` page in the [Cubits Help Center](https://cubits.com/help) Developer's section.
+
+
+```ruby
+channel = Cubits::Channel.create(receiver_currency: 'EUR')
+```
+
+Here a call to `POST /api/v1/channels` is executed and the response is wrapped in a `Cubits::Channel` object.
+
+#### .find(*id*)
+
+Retrieves an existing channel.
+
+```ruby
+channel = Cubits::Channel.find("d17ad6c96f83162a2764ecd4739d7ab2")
+```
+
+Returns `Cubits::Channel` object or `nil` if the specified channel was not found.
+
+#### #reload
+
+Reloads `Cubits::Channel` object.
+```ruby
+channel = Cubits::Channel.find("d17ad6c96f83162a2764ecd4739d7ab2")
+# do some stuff...
+channel.reload # gets the up-to-date channel data from the Cubits API
+```
+
+#### #update
+
+Updates attributes of the channel.
+
+For a list of accepted parameters, see the `POST /api/v1/channels/{id}` page in the [Cubits Help Center](https://cubits.com/help) Developer's section.
+
+```ruby
+channel = Cubits::Channel.find("d17ad6c96f83162a2764ecd4739d7ab2")
+channel.reference # => nil
+channel.update(reference: "CHAN_192357")
+channel.reference # => "CHAN_192357"
+```
+
 ## Accounts
 
 Your Cubits accounts are represented by the `Cubits::Account` class, which is a descendant of [Hashie::Mash](https://github.com/intridea/hashie#mash), so it's a Hash with a method-like access to its elements:
@@ -200,6 +257,4 @@ Cubits.send_money amount: '1.5000000', address: '3BnYBqPnGtRz2cfcnhxFKy3JswU3biM
 On success `.send_money` creates a transaction and returns its reference code.
 
 ----
-
-
 

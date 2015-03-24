@@ -1,3 +1,7 @@
+# 0.3.0
+
+Added Cubits::Channel implementation
+
 # 0.2.1
 
 Minor fixes to README.

@@ -74,6 +74,16 @@ module Cubits
       replace(self.class.find(id))
     end
 
+    # Updates the resource
+    #
+    def update(params = {})
+      unless self.class.exposed_method?(:update)
+        fail NoMethodError, "Resource #{self.class.name} does not expose #update"
+      end
+      fail "Resource #{self.class.name} does not have an id" unless self.respond_to?(:id)
+      replace(self.class.new Cubits.connection.post(self.class.path_to(id), params))
+    end
+
     # Creates a new resource
     #
     def self.create(params = {})

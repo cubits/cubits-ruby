@@ -8,6 +8,7 @@ require 'cubits/resource'
 require 'cubits/invoice'
 require 'cubits/account'
 require 'cubits/quote'
+require 'cubits/channel'
 
 module Cubits
   extend Cubits::Helpers
