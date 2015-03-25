@@ -8,7 +8,8 @@ module Cubits
       Cubits.connection.get('/api/v1/test', foo: 'bar')
       Cubits.connection.post('/api/v1/test', foo: 'bar')
       true
-    rescue StandardError
+    rescue StandardError => e
+      Cubits.logger.error "Test connection to Cubits failed: #{e}"
       false
     end
 

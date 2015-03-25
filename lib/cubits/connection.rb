@@ -44,10 +44,12 @@ module Cubits
     def request(method, path, encoded_data)
       url = URI.join(Cubits.base_url, path)
       url.query = encoded_data if method == :get && !encoded_data.empty?
+      Cubits.logger.warn 'Connecting to Cubits using insecure connection!' unless url.scheme == 'https'
       params = {}
       http = HTTP.with(cubits_headers(path, encoded_data))
       http = http.with('Content-Type' => CONTENT_TYPE) unless method == :get
       params[:body] = encoded_data unless method == :get
+      params[:ssl_context] = ssl_context if url.scheme == 'https'
       Cubits.logger.debug "> #{method.to_s.upcase}: #{url}"
       response = http.send(method, url, params)
       Cubits.logger.debug "< #{response.code} #{response.reason}"
@@ -117,6 +119,18 @@ module Cubits
       Cubits.logger.debug 'sign_request: ' \
         "path=#{path} nonce=#{nonce} request_data=#{request_data} msg=#{msg} signature=#{signature}"
       signature
+    end
+
+    # Returns configured SSLContext
+    #
+    def ssl_context
+      return @ssl_context if @ssl_context
+      @ssl_context = OpenSSL::SSL::SSLContext.new
+      @ssl_context.verify_mode = OpenSSL::SSL::VERIFY_PEER
+      cert_store = OpenSSL::X509::Store.new
+      cert_store.set_default_paths
+      @ssl_context.cert_store = cert_store
+      @ssl_context
     end
   end # class Connection
 end # module Cubits
