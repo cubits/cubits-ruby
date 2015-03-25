@@ -13,7 +13,7 @@ require 'cubits/channel'
 module Cubits
   extend Cubits::Helpers
 
-  DEFAULT_BASE_URL = URI.parse('https://pay.cubits.com/')
+  DEFAULT_BASE_URL = URI.parse('https://api.cubits.com/')
 
   #
   # Configure Cubits connection

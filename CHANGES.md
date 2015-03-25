@@ -1,3 +1,7 @@
+# 0.3.1
+
+Changed API base URL to: https://api.cubits.com/
+
 # 0.3.0
 
 Added Cubits::Channel implementation
