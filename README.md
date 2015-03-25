@@ -58,7 +58,7 @@ invoice.address # => "3QJmV3qfvL9SuYo34YihAf3sRCW3qSinyC"
 
 Creates a new invoice.
 
-For a list of accepted and returned parameters, see the `POST /api/v1/invoices` page in the [Cubits Help Center](https://cubits.com/help) Developer's section.
+For a list of accepted and returned parameters, see the `POST /api/v1/invoices` page in the [Cubits Help Center](https://cubits.com) Developer's section.
 
 
 ```ruby
