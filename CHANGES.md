@@ -1,3 +1,7 @@
+# 0.4.0
+
+Enforcing strict server SSL certificate checks, to prevent MitM attacks
+
 # 0.3.1
 
 Changed API base URL to: https://api.cubits.com/
