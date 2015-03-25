@@ -19,6 +19,7 @@ module Cubits
       fail ArgumentError, 'String is expected as :secret' unless params[:secret].is_a?(String)
       @key = params[:key]
       @secret = params[:secret]
+      @params = params.dup
     end
 
     # Executes a GET request
@@ -42,14 +43,17 @@ module Cubits
     # Sends a request to the API
     #
     def request(method, path, encoded_data)
+      Cubits.logger.warn 'Connecting to Cubits using insecure connection!' if insecure?
       url = URI.join(Cubits.base_url, path)
-      url.query = encoded_data if method == :get && !encoded_data.empty?
-      Cubits.logger.warn 'Connecting to Cubits using insecure connection!' unless url.scheme == 'https'
       params = {}
       http = HTTP.with(cubits_headers(path, encoded_data))
-      http = http.with('Content-Type' => CONTENT_TYPE) unless method == :get
-      params[:body] = encoded_data unless method == :get
-      params[:ssl_context] = ssl_context if url.scheme == 'https'
+      if method == :get
+        url.query = encoded_data unless encoded_data.empty?
+      else
+        http = http.with('Content-Type' => CONTENT_TYPE)
+        params[:body] = encoded_data
+      end
+      params[:ssl_context] = ssl_context unless insecure?
       Cubits.logger.debug "> #{method.to_s.upcase}: #{url}"
       response = http.send(method, url, params)
       Cubits.logger.debug "< #{response.code} #{response.reason}"
@@ -131,6 +135,12 @@ module Cubits
       cert_store.set_default_paths
       @ssl_context.cert_store = cert_store
       @ssl_context
+    end
+
+    # Returns true if an insecure connection is requested (do NOT use in production)
+    #
+    def insecure?
+      @insecure ||= @params[:insecure] || Cubits.base_url.scheme != 'https'
     end
   end # class Connection
 end # module Cubits
