@@ -19,6 +19,7 @@ module Cubits
       fail ArgumentError, 'String is expected as :secret' unless params[:secret].is_a?(String)
       @key = params[:key]
       @secret = params[:secret]
+      @params = params.dup
     end
 
     # Executes a GET request
@@ -42,12 +43,17 @@ module Cubits
     # Sends a request to the API
     #
     def request(method, path, encoded_data)
+      Cubits.logger.warn 'Connecting to Cubits using insecure connection!' if insecure?
       url = URI.join(Cubits.base_url, path)
-      url.query = encoded_data if method == :get && !encoded_data.empty?
       params = {}
       http = HTTP.with(cubits_headers(path, encoded_data))
-      http = http.with('Content-Type' => CONTENT_TYPE) unless method == :get
-      params[:body] = encoded_data unless method == :get
+      if method == :get
+        url.query = encoded_data unless encoded_data.empty?
+      else
+        http = http.with('Content-Type' => CONTENT_TYPE)
+        params[:body] = encoded_data
+      end
+      params[:ssl_context] = ssl_context unless insecure?
       Cubits.logger.debug "> #{method.to_s.upcase}: #{url}"
       response = http.send(method, url, params)
       Cubits.logger.debug "< #{response.code} #{response.reason}"
@@ -117,6 +123,24 @@ module Cubits
       Cubits.logger.debug 'sign_request: ' \
         "path=#{path} nonce=#{nonce} request_data=#{request_data} msg=#{msg} signature=#{signature}"
       signature
+    end
+
+    # Returns configured SSLContext
+    #
+    def ssl_context
+      return @ssl_context if @ssl_context
+      @ssl_context = OpenSSL::SSL::SSLContext.new
+      @ssl_context.verify_mode = OpenSSL::SSL::VERIFY_PEER
+      cert_store = OpenSSL::X509::Store.new
+      cert_store.set_default_paths
+      @ssl_context.cert_store = cert_store
+      @ssl_context
+    end
+
+    # Returns true if an insecure connection is requested (do NOT use in production)
+    #
+    def insecure?
+      @insecure ||= @params[:insecure] || Cubits.base_url.scheme != 'https'
     end
   end # class Connection
 end # module Cubits
