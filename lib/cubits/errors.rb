@@ -24,4 +24,11 @@ module Cubits
 
   class InternalServerError < ServerError
   end
+
+  # Cubits client errors
+  class InvalidSignature < StandardError
+  end
+
+  class InsecureCallback < StandardError
+  end
 end # module Cubits
