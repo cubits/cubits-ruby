@@ -256,5 +256,81 @@ Cubits.send_money amount: '1.5000000', address: '3BnYBqPnGtRz2cfcnhxFKy3JswU3biM
 
 On success `.send_money` creates a transaction and returns its reference code.
 
+## Callbacks
+
+Cubits Merchant API provides an authentication mechanism for callback requests it posts to the merchant specified URL's. That way merchants can be sure, that the data posted within a callback comes from a trusted source.
+
+The callback authentication is described in detail in the [Cubits Help Center](https://cubits.com/help) Developer's section.
+
+The `cubits` ruby gem provides a `Cubits::Callback` class for easy and straightforward callback verification and parsing.
+
+### .from_params()
+
+Provided all relevant headers and body are extracted from the callback request, `from_params()` method validates the signature, parses request body and returns passed data wrapped in a given `Cubits::Resource`-based class object.
+
+Signature of the callback is verified using key+secret pair, passed to `Cubits.configure(...)` beforehand.
+
+#### Parameters
+name                 | type    | description
+---------------------|---------|---------------------
+cubits_callback_id   | String  | Value of the CUBITS_CALLBACK_ID header
+cubits_key           | String  | Value of the CUBITS_KEY header
+cubits_signature     | String  | Value of the CUBITS_SIGNATURE header
+body                 | String  | Callback request body as a String
+resource_class       | Resource, nil | (optional) subclass of `Cubits::Resource` (e.g. `Cubits::Invoice`). If specified, an object of that class is instantiated and initialized with the parsed request body. (default: nil)
+allow_insecure       | Boolean | (optional) Allow insecure, unsigned callbacks (default: false)
+
+#### Returns
+
+An instance of a given `resource_class` or a `Hash`.
+
+#### Errors
+
+`Cubits::InvalidSignature` is raised if either `cubits_key` passed with the callback
+does not match the preconfigured API key, or the `cubits_signature` does not match
+the signature calculated from a preconfigured API key+secret pair.
+
+`Cubits::InsecureCallback` is raised if the callback is unsigned, and `allow_insecure` option is *false*.
+
+#### Examples
+
+Validate and parse callback into a plain `Hash`:
+```ruby
+data = Cubits::Callback.from_params(
+  cubits_callback_id: 'ABCDEFGH',
+  cubits_key: '7287ba0902...',
+  cubits_signature: '7d89c35c2...',
+  body: '{"attr1": 123, "attr2": "hello"}'
+)
+
+data # => { 'attr1' => 123, 'attr2' => 'hello' }
+data.class # => Hash
+```
+
+Validate and parse callback into a `Cubits::Invoice` object:
+```ruby
+invoice = Cubits::Callback.from_params(
+  cubits_callback_id: 'ABCDEFGH',
+  cubits_key: '7287ba0902...',
+  cubits_signature: '7d89c35c2...',
+  body: '{"attr1": 123, "attr2": "hello"}',
+  resource_class: Cubits::Invoice
+)
+
+invoice # => { 'attr1' => 123, 'attr2' => 'hello' }
+invoice.class # => Cubits::Invoice
+```
+
+Process an insecure, unsigned callback:
+```ruby
+data = Cubits::Callback.from_params(
+  cubits_callback_id: 'ABCDEFGH',
+  body: '{"attr1": 123, "attr2": "hello"}',
+  allow_insecure: true
+)
+
+data # => { 'attr1' => 123, 'attr2' => 'hello' }
+```
+
 ----
 

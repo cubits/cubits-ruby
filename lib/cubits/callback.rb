@@ -9,7 +9,7 @@ module Cubits
     # @param params[:cubits_key] [String] Value of the CUBITS_KEY header
     # @param params[:cubits_signature] [String] Value of the CUBITS_SIGNATURE header
     # @param params[:body] [String] Request body
-    # @param params[:resource_class] [Resource] (optional) Instantiate a Resource based object
+    # @param params[:resource_class] [Resource,nil] (optional) Instantiate a Resource based object (default: nil)
     #   and initialize it with parsed request body. If not specified, returns parsed body as a plain Hash
     # @param params[:allow_insecure] [Boolean] (optional) Allow insecure, unsigned callbacks (default: false)
     #
