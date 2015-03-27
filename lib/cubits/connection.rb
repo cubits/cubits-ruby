@@ -38,6 +38,16 @@ module Cubits
       request(:post, path, encoded_data)
     end
 
+    # Signs the message with preconfigured secret
+    #
+    # @param msg [String]
+    #
+    # @return [String] Calculated signature
+    #
+    def sign_message(msg)
+      OpenSSL::HMAC.hexdigest('sha512', @secret, msg)
+    end
+
     private
 
     # Sends a request to the API
@@ -119,7 +129,7 @@ module Cubits
     #
     def sign_request(path, nonce, request_data)
       msg = path + nonce.to_s + OpenSSL::Digest::SHA256.hexdigest(request_data)
-      signature = OpenSSL::HMAC.hexdigest('sha512', @secret, msg)
+      signature = sign_message(msg)
       Cubits.logger.debug 'sign_request: ' \
         "path=#{path} nonce=#{nonce} request_data=#{request_data} msg=#{msg} signature=#{signature}"
       signature

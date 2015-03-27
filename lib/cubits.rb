@@ -9,6 +9,7 @@ require 'cubits/invoice'
 require 'cubits/account'
 require 'cubits/quote'
 require 'cubits/channel'
+require 'cubits/callback'
 
 module Cubits
   extend Cubits::Helpers
@@ -23,14 +24,24 @@ module Cubits
   # @param params[:secret] [String] API secret obtained from Cubits
   #
   def self.configure(params = {})
-    @connection = Connection.new(params)
+    @connections ||= {}
+    @connections[params[:key]] = Connection.new(params)
   end
 
-  #
   # Returns configured Connection object
   #
-  def self.connection
-    @connection || fail('Cubits connection is not configured')
+  # @param key [String] (optional) Cubits API key of the configured connection
+  #
+  # @return [Connection] Connection object matching the requested Cubits API key or first
+  #                      configured connection
+  #
+  def self.connection(key = nil)
+    @connections ||= {}
+    c = key ? @connections[key] : @connections.values.first
+    unless c
+      fail ConnectionError, "Cubits connection is not configured for key #{key || '(default)'}"
+    end
+    c
   end
 
   # Returns current Logger object
@@ -60,10 +71,11 @@ module Cubits
     fail ArgumentError, 'URI is expected as new_base_url' unless new_base_url.is_a?(URI)
     @base_url = new_base_url
   end
+
   # Resets all internal states
   #
   def self.reset
-    @connection = nil
+    @connections = {}
     @logger = nil
   end
 end # module Cubits
