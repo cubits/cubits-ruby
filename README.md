@@ -145,6 +145,49 @@ channel.update(reference: "CHAN_192357")
 channel.reference # => "CHAN_192357"
 ```
 
+#### #txs
+
+Returns channel transactions as a collection of `Cubits::Channel::Tx` objects.
+
+The collection exposes methods `.all` and `.find()`:
+
+Listing all channel transactions:
+```ruby
+channel = Cubits::Channel.find("d17ad6c96f83162a2764ecd4739d7ab2")
+
+channel.txs.all # => [{"tx_ref_code"=>"YYWZN", ...}, ...]
+```
+
+Retrieving a channel transaction with given *tx_ref_code*:
+```ruby
+channel = Cubits::Channel.find("d17ad6c96f83162a2764ecd4739d7ab2")
+tx = channel.txs.find("YYWZN")
+tx.class # => Cubits::Channel::Tx
+
+tx # => {"tx_ref_code"=>"YYWZN", "state"=>"pending", ... }
+```
+
+### Cubits::Channel::Tx
+
+This resource represents a merchant channel transaction. An instance of `Cubits::Channel::Tx` should be obtained from a `channel.txs` collection or instantiated
+from a callback.
+
+#### #channel
+
+Returns the `Cubits::Channel` object, owning this transaction:
+
+```ruby
+tx = Cubits::Channel::Tx.from_callback(
+  cubits_callback_id: 'ABCDEFGH',
+  cubits_key: '7287ba0902...',
+  cubits_signature: '7d89c35c2...',
+  body: '{"tx_ref_code": "YYWZN", "state": "pending", ...}'
+)
+
+tx.channel # => {"receiver_currency"=>"EUR", "name"=>nil, ...}
+tx.channel.class # => Cubits::Channel
+```
+
 ## Accounts
 
 Your Cubits accounts are represented by the `Cubits::Account` class, which is a descendant of [Hashie::Mash](https://github.com/intridea/hashie#mash), so it's a Hash with a method-like access to its elements:
@@ -255,6 +298,99 @@ Cubits.send_money amount: '1.5000000', address: '3BnYBqPnGtRz2cfcnhxFKy3JswU3biM
 ```
 
 On success `.send_money` creates a transaction and returns its reference code.
+
+## Callbacks
+
+Cubits Merchant API provides an authentication mechanism for callback requests it posts to the merchant specified URL's. That way merchants can be sure, that the data posted within a callback comes from a trusted source.
+
+The callback authentication is described in detail in the [Cubits Help Center](https://cubits.com/help) Developer's section.
+
+The `cubits` ruby gem provides a `Cubits::Callback` class for easy and straightforward callback verification and parsing.
+
+### .from_params()
+
+Provided all relevant headers and body are extracted from the callback request, `from_params()` method validates the signature, parses request body and returns passed data wrapped in a given `Cubits::Resource`-based class object.
+
+Signature of the callback is verified using key+secret pair, passed to `Cubits.configure(...)` beforehand.
+
+#### Parameters
+name                 | type    | description
+---------------------|---------|---------------------
+cubits_callback_id   | String  | Value of the CUBITS_CALLBACK_ID header
+cubits_key           | String  | Value of the CUBITS_KEY header
+cubits_signature     | String  | Value of the CUBITS_SIGNATURE header
+body                 | String  | Callback request body as a String
+resource_class       | Resource, nil | (optional) subclass of `Cubits::Resource` (e.g. `Cubits::Invoice`). If specified, an object of that class is instantiated and initialized with the parsed request body. (default: nil)
+allow_insecure       | Boolean | (optional) Allow insecure, unsigned callbacks (default: false)
+
+#### Returns
+
+An instance of a given `resource_class` or a `Hash`.
+
+#### Errors
+
+`Cubits::InvalidSignature` is raised if either `cubits_key` passed with the callback
+does not match the preconfigured API key, or the `cubits_signature` does not match
+the signature calculated from a preconfigured API key+secret pair.
+
+`Cubits::InsecureCallback` is raised if the callback is unsigned, and `allow_insecure` option is *false*.
+
+#### Examples
+
+Validate and parse callback into a plain `Hash`:
+```ruby
+data = Cubits::Callback.from_params(
+  cubits_callback_id: 'ABCDEFGH',
+  cubits_key: '7287ba0902...',
+  cubits_signature: '7d89c35c2...',
+  body: '{"attr1": 123, "attr2": "hello"}'
+)
+
+data # => { 'attr1' => 123, 'attr2' => 'hello' }
+data.class # => Hash
+```
+
+Validate and parse callback into a `Cubits::Invoice` object:
+```ruby
+invoice = Cubits::Callback.from_params(
+  cubits_callback_id: 'ABCDEFGH',
+  cubits_key: '7287ba0902...',
+  cubits_signature: '7d89c35c2...',
+  body: '{"attr1": 123, "attr2": "hello"}',
+  resource_class: Cubits::Invoice
+)
+
+invoice # => { 'attr1' => 123, 'attr2' => 'hello' }
+invoice.class # => Cubits::Invoice
+```
+
+Process an insecure, unsigned callback:
+```ruby
+data = Cubits::Callback.from_params(
+  cubits_callback_id: 'ABCDEFGH',
+  body: '{"attr1": 123, "attr2": "hello"}',
+  allow_insecure: true
+)
+
+data # => { 'attr1' => 123, 'attr2' => 'hello' }
+```
+
+### Cubits::Resource.from_callback()
+
+`Cubits::Invoice`, `Cubits::Channel` and `Cubits::Channel::Tx` expose
+a helper method: `.from_callback()` which can be used to validate callback and instantiate a resource object in one go:
+
+```ruby
+invoice = Cubits::Invoice.from_callback(
+  cubits_callback_id: 'ABCDEFGH',
+  cubits_key: '7287ba0902...',
+  cubits_signature: '7d89c35c2...',
+  body: '{"attr1": 123, "attr2": "hello"}'
+)
+
+invoice # => { 'attr1' => 123, 'attr2' => 'hello' }
+invoice.class # => Cubits::Invoice
+```
 
 ----
 

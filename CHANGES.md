@@ -1,3 +1,13 @@
+# 0.5.0
+
+* Added Cubits::Channel::Tx collection implementation.
+Use `channel.txs.all` to retrieve all channel transactions,
+`channel.txs.find()` to find a single transaction.
+
+* Added Cubits::Callback module for callback signature verification
+and resource instantiation.
+Cubits::Invoice, Cubits::Channel, Cubits::Channel::Tx expose .from_callback() method.
+
 # 0.4.0
 
 Enforcing strict server SSL certificate checks, to prevent MitM attacks
