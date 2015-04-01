@@ -40,6 +40,35 @@ module Cubits
       end
     end
 
+    # Associations
+    def self.has_many(association_name, params = {})
+      define_method(association_name) do
+        association = instance_variable_get("@#{association_name}")
+        return association if association
+        class_name = params[:class_name] || association_name.to_s.capitalize.sub(/s$/, '')
+        resource = Cubits.const_get(class_name) || fail("Failed to find class #{class_name}")
+        association = ResourceCollection.new(
+          path: self.class.path_to(id) + '/' + association_name.to_s,
+          resource: resource,
+          expose_methods: params[:expose_methods] || [:find, :all]
+        )
+        instance_variable_set("@#{association_name}", association)
+        association
+      end
+    end
+
+    def self.belongs_to(association_name, params = {})
+      define_method(association_name) do
+        association_id = send :"#{association_name}_id"
+        unless association_id
+          fail ArgumentError, "No #{association_name}_id attribute is defined for #{self}"
+        end
+        class_name = params[:class_name] || association_name.to_s.capitalize
+        resource = Cubits.const_get(class_name) || fail("Failed to find class #{class_name}")
+        resource.find(association_id)
+      end
+    end
+
     # Loads collection of resources
     #
     # @return [Array<Resource>]
