@@ -30,7 +30,7 @@ module Cubits
     # Returns API path to resource
     #
     def self.path_to(resource_or_id = nil)
-      fail ArgumentError, "Resource path is not set for #{self.class.name}" unless @path
+      fail ArgumentError, "Resource path is not set for #{name}" unless @path
       if resource_or_id.is_a?(Resource)
         "#{@path}/#{resource_or_id.id}"
       elsif resource_or_id
@@ -91,6 +91,28 @@ module Cubits
       new Cubits.connection.get(path_to(id))
     rescue NotFound
       nil
+    end
+
+    # Processes callback request parsed into separate params
+    # and instantiates a resource object on success.
+    #
+    # @param params [Hash]
+    # @param params[:cubits_callback_id] [String] Value of the CUBITS_CALLBACK_ID header
+    # @param params[:cubits_key] [String] Value of the CUBITS_KEY header
+    # @param params[:cubits_signature] [String] Value of the CUBITS_SIGNATURE header
+    # @param params[:body] [String] Request body
+    # @param params[:allow_insecure] [Boolean] (optional) Allow insecure, unsigned callbacks (default: false)
+    #
+    # @return [Resource,Hash]
+    #
+    # @raise [InvalidSignature]
+    # @raise [InsecureCallback]
+    #
+    def self.from_callback(params)
+      unless exposed_method?(:from_callback)
+        fail NoMethodError, "Resource #{name} does not expose .from_callback"
+      end
+      Cubits::Callback.from_params(params.merge(resource_class: self))
     end
 
     # Reloads resource
