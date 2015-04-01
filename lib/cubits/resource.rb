@@ -30,13 +30,42 @@ module Cubits
     # Returns API path to resource
     #
     def self.path_to(resource_or_id = nil)
-      fail ArgumentError, "Resource path is not set for #{self.class.name}" unless @path
+      fail ArgumentError, "Resource path is not set for #{name}" unless @path
       if resource_or_id.is_a?(Resource)
         "#{@path}/#{resource_or_id.id}"
       elsif resource_or_id
         "#{@path}/#{resource_or_id}"
       else
         @path
+      end
+    end
+
+    # Associations
+    def self.has_many(association_name, params = {})
+      define_method(association_name) do
+        association = instance_variable_get("@#{association_name}")
+        return association if association
+        class_name = params[:class_name] || association_name.to_s.capitalize.sub(/s$/, '')
+        resource = Cubits.const_get(class_name) || fail("Failed to find class #{class_name}")
+        association = ResourceCollection.new(
+          path: self.class.path_to(id) + '/' + association_name.to_s,
+          resource: resource,
+          expose_methods: params[:expose_methods] || [:find, :all]
+        )
+        instance_variable_set("@#{association_name}", association)
+        association
+      end
+    end
+
+    def self.belongs_to(association_name, params = {})
+      define_method(association_name) do
+        association_id = send :"#{association_name}_id"
+        unless association_id
+          fail ArgumentError, "No #{association_name}_id attribute is defined for #{self}"
+        end
+        class_name = params[:class_name] || association_name.to_s.capitalize
+        resource = Cubits.const_get(class_name) || fail("Failed to find class #{class_name}")
+        resource.find(association_id)
       end
     end
 
@@ -62,6 +91,28 @@ module Cubits
       new Cubits.connection.get(path_to(id))
     rescue NotFound
       nil
+    end
+
+    # Processes callback request parsed into separate params
+    # and instantiates a resource object on success.
+    #
+    # @param params [Hash]
+    # @param params[:cubits_callback_id] [String] Value of the CUBITS_CALLBACK_ID header
+    # @param params[:cubits_key] [String] Value of the CUBITS_KEY header
+    # @param params[:cubits_signature] [String] Value of the CUBITS_SIGNATURE header
+    # @param params[:body] [String] Request body
+    # @param params[:allow_insecure] [Boolean] (optional) Allow insecure, unsigned callbacks (default: false)
+    #
+    # @return [Resource,Hash]
+    #
+    # @raise [InvalidSignature]
+    # @raise [InsecureCallback]
+    #
+    def self.from_callback(params)
+      unless exposed_method?(:from_callback)
+        fail NoMethodError, "Resource #{name} does not expose .from_callback"
+      end
+      Cubits::Callback.from_params(params.merge(resource_class: self))
     end
 
     # Reloads resource

@@ -145,6 +145,49 @@ channel.update(reference: "CHAN_192357")
 channel.reference # => "CHAN_192357"
 ```
 
+#### #txs
+
+Returns channel transactions as a collection of `Cubits::Channel::Tx` objects.
+
+The collection exposes methods `.all` and `.find()`:
+
+Listing all channel transactions:
+```ruby
+channel = Cubits::Channel.find("d17ad6c96f83162a2764ecd4739d7ab2")
+
+channel.txs.all # => [{"tx_ref_code"=>"YYWZN", ...}, ...]
+```
+
+Retrieving a channel transaction with given *tx_ref_code*:
+```ruby
+channel = Cubits::Channel.find("d17ad6c96f83162a2764ecd4739d7ab2")
+tx = channel.txs.find("YYWZN")
+tx.class # => Cubits::Channel::Tx
+
+tx # => {"tx_ref_code"=>"YYWZN", "state"=>"pending", ... }
+```
+
+### Cubits::Channel::Tx
+
+This resource represents a merchant channel transaction. An instance of `Cubits::Channel::Tx` should be obtained from a `channel.txs` collection or instantiated
+from a callback.
+
+#### #channel
+
+Returns the `Cubits::Channel` object, owning this transaction:
+
+```ruby
+tx = Cubits::Channel::Tx.from_callback(
+  cubits_callback_id: 'ABCDEFGH',
+  cubits_key: '7287ba0902...',
+  cubits_signature: '7d89c35c2...',
+  body: '{"tx_ref_code": "YYWZN", "state": "pending", ...}'
+)
+
+tx.channel # => {"receiver_currency"=>"EUR", "name"=>nil, ...}
+tx.channel.class # => Cubits::Channel
+```
+
 ## Accounts
 
 Your Cubits accounts are represented by the `Cubits::Account` class, which is a descendant of [Hashie::Mash](https://github.com/intridea/hashie#mash), so it's a Hash with a method-like access to its elements:
@@ -330,6 +373,23 @@ data = Cubits::Callback.from_params(
 )
 
 data # => { 'attr1' => 123, 'attr2' => 'hello' }
+```
+
+### Cubits::Resource.from_callback()
+
+`Cubits::Invoice`, `Cubits::Channel` and `Cubits::Channel::Tx` expose
+a helper method: `.from_callback()` which can be used to validate callback and instantiate a resource object in one go:
+
+```ruby
+invoice = Cubits::Invoice.from_callback(
+  cubits_callback_id: 'ABCDEFGH',
+  cubits_key: '7287ba0902...',
+  cubits_signature: '7d89c35c2...',
+  body: '{"attr1": 123, "attr2": "hello"}'
+)
+
+invoice # => { 'attr1' => 123, 'attr2' => 'hello' }
+invoice.class # => Cubits::Invoice
 ```
 
 ----
