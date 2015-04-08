@@ -147,24 +147,85 @@ channel.reference # => "CHAN_192357"
 
 #### #txs
 
-Returns channel transactions as a collection of `Cubits::Channel::Tx` objects.
+Returns channel transactions as `Cubits::ResourceCollection` of `Cubits::Channel::Tx` objects.
 
-The collection exposes methods `.all` and `.find()`:
-
-Listing all channel transactions:
 ```ruby
 channel = Cubits::Channel.find("d17ad6c96f83162a2764ecd4739d7ab2")
-
-channel.txs.all # => [{"tx_ref_code"=>"YYWZN", ...}, ...]
+channel.txs.count # => 42
 ```
 
-Retrieving a channel transaction with given *tx_ref_code*:
+### Cubits::ResourceCollection
+
+The `Cubits::ResourceCollection` object represents a collection of resources of a particular type:
+
 ```ruby
 channel = Cubits::Channel.find("d17ad6c96f83162a2764ecd4739d7ab2")
-tx = channel.txs.find("YYWZN")
-tx.class # => Cubits::Channel::Tx
+channel.txs # => <Cubits::ResourceCollection of Cubits::Channel::Tx ...>
+```
 
-tx # => {"tx_ref_code"=>"YYWZN", "state"=>"pending", ... }
+`Cubits::ResourceCollection` implements Ruby [Enumerable](http://ruby-doc.org/core-2.2.1/Enumerable.html) interface, and therefore exposes all the basic iterators (`#each`, `#select`, `#map`) as well as [many other methods](http://ruby-doc.org/core-2.2.1/Enumerable.html).
+
+In addition to that, some helper methods are implemented:
+
+#### #count
+
+Returns number of elements in the collection:
+```ruby
+channel = Cubits::Channel.find("d17ad6c96f83162a2764ecd4739d7ab2")
+channel.txs.count # => 42
+```
+
+#### #all
+
+Returns all the elements of the collection as an `Array`:
+```ruby
+channel = Cubits::Channel.find("d17ad6c96f83162a2764ecd4739d7ab2")
+channel.txs.all # => [{ "tx_ref_code"=>"YYWZN",
+                #       "state"=>"pending",
+                #       "channel_id"=>"d17ad6c96f83162a2764ecd4739d7ab2",
+                #       ...
+                #     },
+                #     ...
+                #    ]
+```
+
+#### #first
+
+Returns the first element of the collection:
+```ruby
+channel = Cubits::Channel.find("d17ad6c96f83162a2764ecd4739d7ab2")
+channel.txs.first # => { "tx_ref_code"=>"YYWZN", "state" => "pending", ... }
+```
+
+#### #last
+
+Returns the last element of the collection:
+```ruby
+channel = Cubits::Channel.find("d17ad6c96f83162a2764ecd4739d7ab2")
+channel.txs.last # => { "tx_ref_code"=>"WWZKX", "state" => "completed", ... }
+```
+
+#### #find(*id*)
+
+Finds and returns an element in the collection with a given *id* (or *tx_ref_code* in case of Cubits::Channel::Tx), or `nil` if the element cannot be found.
+
+```ruby
+channel = Cubits::Channel.find("d17ad6c96f83162a2764ecd4739d7ab2")
+channel.txs.find("PGDAV") # => { "tx_ref_code"=>"PGDAV", "state" => "completed", ... }
+```
+
+#### #reload
+
+Reloads collection. Resets preloaded elements and element count.
+
+```ruby
+channel = Cubits::Channel.find("d17ad6c96f83162a2764ecd4739d7ab2")
+channel.txs.count # => 42
+
+# ... new transaction is created
+
+channel.txs.count # => 42
+channel.txs.reload.count # => 43
 ```
 
 ### Cubits::Channel::Tx
