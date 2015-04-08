@@ -1,3 +1,9 @@
+# 0.6.0
+
+* Added Cubits::ResourceCollection, which implements Ruby [Enumerable](http://ruby-doc.org/core-2.2.1/Enumerable.html)
+plus some helper methods
+* `Cubits::Channel#txs` now is a `Cubits::ResourceCollection` of `Cubits::Channel::Tx`
+
 # 0.5.0
 
 * Added Cubits::Channel::Tx collection implementation.
