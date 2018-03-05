@@ -133,7 +133,7 @@ module Cubits
       end
       fail "Resource #{self.class.name} does not have an id" unless self.respond_to?(:id)
       key = params[:key]
-      params = params.reject { |k| k == :key }
+      params = params.reject { |k, _v| k == :key }
       replace(self.class.new Cubits.connection(key).post(self.class.path_to(id), params))
     end
 
@@ -141,7 +141,9 @@ module Cubits
     #
     def self.create(params = {})
       fail NoMethodError, "Resource #{name} does not expose .create" unless exposed_method?(:create)
-      new Cubits.connection(params[:key]).post(path_to, params.reject { |k| k == :key })
+      key = params[:key]
+      params = params.reject { |k, _v| k == :key }
+      new Cubits.connection(key).post(path_to, params)
     end
   end # class Resource
 end # module Cubits
