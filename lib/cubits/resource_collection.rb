@@ -62,9 +62,9 @@ module Cubits
     #
     # @return nil if resource is not found
     #
-    def find(id)
+    def find(id, params = {})
       fail NoMethodError, "Resource #{name} does not expose .find" unless exposed_method?(:find)
-      resource.new Cubits.connection.get(path_to(id))
+      resource.new Cubits.connection(params[:key]).get(path_to(id))
     rescue NotFound
       nil
     end
@@ -147,8 +147,8 @@ module Cubits
 
     # Loads i-th page
     #
-    def load_page(i)
-      response = Cubits.connection.get(path_to, page: i)
+    def load_page(i, params = {})
+      response = Cubits.connection(params[:key]).get(path_to, page: i)
       @pagination = Hashie::Mash.new(response['pagination'])
       response[collection_name].map { |r| resource.new r }
     end
