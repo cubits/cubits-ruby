@@ -4,10 +4,9 @@ module Cubits
     # Runs a few calls to Cubits API and returns true if the connection
     # to the API is configured correctly.
     #
-    def available?(params = {})
-      key = params.is_a?(Hash) ? params[:key] : params
-      Cubits.connection(key).get('/api/v1/test', foo: 'bar')
-      Cubits.connection(key).post('/api/v1/test', foo: 'bar')
+    def available?
+      Cubits.connection.get('/api/v1/test', foo: 'bar')
+      Cubits.connection.post('/api/v1/test', foo: 'bar')
       true
     rescue StandardError => e
       Cubits.logger.error "Test connection to Cubits failed: #{e}"
@@ -28,7 +27,7 @@ module Cubits
       fail ArgumentError, 'String is expected as :address' unless params[:address].is_a?(String)
       fail ArgumentError, 'Invalid amount format' unless params[:amount] =~ /^\d+\.\d+$/
       fail ArgumentError, 'Invalid address format' unless params[:address] =~ /^[A-Za-z0-9]+$/
-      Cubits.connection(params[:key]).post(
+      Cubits.connection.post(
         '/api/v1/send_money',
         amount: params[:amount], address: params[:address]
       )
@@ -52,7 +51,7 @@ module Cubits
       fail ArgumentError, 'String is expected as sender[:currency]' unless sender[:currency].is_a?(String)
       fail ArgumentError, 'String is expected as sender[:amount]' unless sender[:amount].is_a?(String)
       fail ArgumentError, 'Invalid amount format' unless sender[:amount] =~ /^\d+\.\d+$/
-      Cubits.connection(params[:key]).post(
+      Cubits.connection.post(
         '/api/v1/buy',
         sender: {
           currency: sender[:currency],
@@ -84,7 +83,7 @@ module Cubits
       fail ArgumentError, 'Hash is expected as :receiver' unless params[:receiver].is_a?(Hash)
       receiver = params[:receiver]
       fail ArgumentError, 'String is expected as receiver[:currency]' unless receiver[:currency].is_a?(String)
-      Cubits.connection(params[:key]).post(
+      Cubits.connection.post(
         '/api/v1/sell',
         sender: {
           amount: sender[:amount]

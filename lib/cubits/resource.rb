@@ -73,9 +73,9 @@ module Cubits
     #
     # @return [Array<Resource>]
     #
-    def self.all(params = {})
+    def self.all
       fail NoMethodError, "Resource #{name} does not expose .all" unless exposed_method?(:all)
-      Cubits.connection(params[:key]).get(path_to)[collection_name].map { |r| new r }
+      Cubits.connection.get(path_to)[collection_name].map { |r| new r }
     rescue NotFound
       nil
     end
@@ -86,9 +86,9 @@ module Cubits
     #
     # @return nil if resource is not found
     #
-    def self.find(id, params = {})
+    def self.find(id)
       fail NoMethodError, "Resource #{name} does not expose .find" unless exposed_method?(:find)
-      new Cubits.connection(params[:key]).get(path_to(id))
+      new Cubits.connection.get(path_to(id))
     rescue NotFound
       nil
     end
@@ -132,18 +132,14 @@ module Cubits
         fail NoMethodError, "Resource #{self.class.name} does not expose #update"
       end
       fail "Resource #{self.class.name} does not have an id" unless self.respond_to?(:id)
-      key = params[:key]
-      params = params.reject { |k, _v| k == :key }
-      replace(self.class.new Cubits.connection(key).post(self.class.path_to(id), params))
+      replace(self.class.new Cubits.connection.post(self.class.path_to(id), params))
     end
 
     # Creates a new resource
     #
     def self.create(params = {})
       fail NoMethodError, "Resource #{name} does not expose .create" unless exposed_method?(:create)
-      key = params[:key]
-      params = params.reject { |k, _v| k == :key }
-      new Cubits.connection(key).post(path_to, params)
+      new Cubits.connection.post(path_to, params)
     end
   end # class Resource
 end # module Cubits
