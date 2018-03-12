@@ -35,34 +35,35 @@ module Cubits
   #
   # @return [Connection] Connection object matching the requested Cubits API key
   #                      or Connection object matching Cubits.active_connection_key
-  #                      or first configured connection
   #
   def self.connection(key = active_connection_key)
-    @connections ||= {}
-    c = key ? @connections[key] : @connections.values.first
-    unless c
+    if @connections.nil? || @connections[key].nil?
       fail ConnectionError, "Cubits connection is not configured for key #{key || '(default)'}"
     end
-    c
+    @connections[key]
   end
 
-  # Returns current cubits connection key (Cubits API key)
+  # Returns current Cubits connection key (Cubits API key)
   #
-  # @return [String] key of current connection
+  # @return [String] current thread-local active connection key
+  #                  or the last configured connection key
   #
   def self.active_connection_key
-    Thread.current[:cubits_active_connection_key]
+    Thread.current[:cubits_active_connection_key] || @connections&.keys&.last
   end
 
-  # Sets current cubits connection to given Cubits API key
+  # Sets current Cubits connection to given Cubits API key
   #
   # @param key [String] Cubits API key of the configured connection
   #
   def self.active_connection_key=(key)
+    if @connections.nil? || @connections[key].nil?
+      fail ConnectionError, "Cubits connection is not configured for key #{key}"
+    end
     Thread.current[:cubits_active_connection_key] = key
   end
 
-  # Sets current cubits connection to given Cubits API key and yields given block
+  # Sets current Cubits connection to given Cubits API key and yields given block
   #
   # @param key [String] Cubits API key of the configured connection
   #
