@@ -40,6 +40,8 @@ Cubits.configure(key: '***', secret: '***')
 Cubits.available? # => true
 ```
 
+If you configured multiple connections the last one will be used by default. You can get the current active connection key with `Cubits.active_connection_key` and switch between connections with `Cubits.active_connection_key=`. There is also a possibility to temporary switch the connection for a block: `Cubits.with_connection_key() { ... }`
+
 ## Invoices
 
 Using the `cubits` Ruby client you can create and retrieve invoices.
