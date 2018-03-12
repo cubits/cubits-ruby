@@ -1,3 +1,10 @@
+# 0.7.0
+
+* Added support of concurrent connections. Use `Cubits.active_connection_key()`,
+`Cubits.active_connection_key=()` and `Cubits.with_connection_key() { ... }`
+to manipulate the connections. 
+* The last configured connection is being used by default now.
+
 # 0.6.0
 
 * Added Cubits::ResourceCollection, which implements Ruby [Enumerable](http://ruby-doc.org/core-2.2.1/Enumerable.html)
